@@ -1264,10 +1264,353 @@ function withdraw(){
    EXTERNAL BOT CONNECTION
 ========================================================= */
 
+const EXTERNAL_BOT_APPROVED_KEY = "externalBotApproved";
+
+function isExternalBotApproved(){
+    return localStorage.getItem(EXTERNAL_BOT_APPROVED_KEY) === "true";
+}
+
 function openExternalBotPage(){
 
-    document.getElementById("externalBotModal").style.display = "flex";
+    if(isExternalBotApproved()){
+        setExternalBotConnectedUI();
+    }else{
+        document.getElementById("externalBotModal").style.display = "flex";
 
+        const paymentPage = document.getElementById("externalBotPaymentPage");
+        const proofPage = document.getElementById("externalBotProofPage");
+        const xmlPage = document.getElementById("externalBotXmlPage");
+
+        if(paymentPage) paymentPage.style.display = "block";
+        if(proofPage) proofPage.style.display = "none";
+        if(xmlPage) xmlPage.style.display = "none";
+    }
+}
+/* =========================================================
+   EXTERNAL BOT PAGE NAVIGATION
+========================================================= */
+
+function openExternalBotPage(){
+
+    const modal = document.getElementById("externalBotModal");
+
+    if(!modal) return;
+
+    modal.style.display = "block";
+
+    if(typeof isExternalBotApproved === "function" &&
+       isExternalBotApproved()){
+
+        setExternalBotConnectedUI();
+        return;
+    }
+
+    document.getElementById("externalBotPaymentPage").style.display = "block";
+    document.getElementById("externalBotProofPage").style.display = "none";
+    document.getElementById("externalBotXmlPage").style.display = "none";
+}
+
+
+/* =========================================================
+   CLOSE MODAL
+========================================================= */
+
+function closeExternalBotModal(){
+
+    const modal = document.getElementById("externalBotModal");
+
+    if(modal){
+        modal.style.display = "none";
+    }
+
+}
+
+
+/* =========================================================
+   PAYMENT PAGE → PROOF PAGE
+========================================================= */
+
+function openExternalBotProofPage(){
+
+    document.getElementById("externalBotPaymentPage").style.display = "none";
+    document.getElementById("externalBotProofPage").style.display = "block";
+    document.getElementById("externalBotXmlPage").style.display = "none";
+
+}
+
+
+/* =========================================================
+   PROOF PAGE → XML PAGE
+========================================================= */
+
+function openExternalBotXmlPage(){
+
+    const proofFile = document.getElementById("paymentProofFile");
+
+    if(!proofFile || !proofFile.files || !proofFile.files.length){
+
+        if(typeof toast === "function"){
+            toast("Please upload your proof of payment first.");
+        }else{
+            alert("Please upload your proof of payment first.");
+        }
+
+        return;
+    }
+
+
+    document.getElementById("externalBotPaymentPage").style.display = "none";
+    document.getElementById("externalBotProofPage").style.display = "none";
+    document.getElementById("externalBotXmlPage").style.display = "block";
+
+}
+
+
+/* =========================================================
+   XML PAGE → PROOF PAGE
+========================================================= */
+
+function backToExternalBotProofPage(){
+
+    document.getElementById("externalBotXmlPage").style.display = "none";
+    document.getElementById("externalBotProofPage").style.display = "block";
+    document.getElementById("externalBotPaymentPage").style.display = "none";
+
+}
+
+
+/* =========================================================
+   PROOF PAGE → PAYMENT PAGE
+========================================================= */
+
+function backToExternalBotPaymentPage(){
+
+    document.getElementById("externalBotProofPage").style.display = "none";
+    document.getElementById("externalBotXmlPage").style.display = "none";
+    document.getElementById("externalBotPaymentPage").style.display = "block";
+
+}
+
+
+/* =========================================================
+   SHOW PAYMENT PROOF NAME
+========================================================= */
+
+function showPaymentProofName(){
+
+    const input = document.getElementById("paymentProofFile");
+    const display = document.getElementById("paymentProofFileName");
+
+    if(!input || !display) return;
+
+
+    if(input.files && input.files.length){
+
+        display.textContent = "Selected: " + input.files[0].name;
+        display.style.color = "#00ff78";
+
+    }else{
+
+        display.textContent = "No file selected";
+        display.style.color = "#777";
+
+    }
+
+}
+
+
+/* =========================================================
+   SHOW XML FILE NAME
+========================================================= */
+
+function showExternalBotXmlName(){
+
+    const input = document.getElementById("externalBotXmlFile");
+    const display = document.getElementById("externalBotXmlFileName");
+    const error = document.getElementById("xmlErrorMessage");
+
+    if(!input || !display) return;
+
+
+    if(input.files && input.files.length){
+
+        const filename = input.files[0].name;
+
+        display.textContent = "Selected: " + filename;
+
+        if(filename === "HACKdv001.XML"){
+
+            display.style.color = "#00ff78";
+
+            if(error){
+                error.style.display = "none";
+                error.textContent = "";
+            }
+
+        }else{
+
+            display.style.color = "#ff5555";
+
+            if(error){
+                error.style.display = "block";
+                error.textContent =
+                    "Invalid filename. The required file must be exactly HACKdv001.XML";
+            }
+
+        }
+
+    }else{
+
+        display.textContent = "No file selected";
+        display.style.color = "#777";
+
+    }
+
+}
+
+
+/* =========================================================
+   COPY USDT WALLET
+========================================================= */
+
+function copyExternalBotWallet(){
+
+    const wallet =
+        "TEgaKW5vp7CNb8sAb5c15VaodTSkBQqYsA";
+
+
+    if(navigator.clipboard){
+
+        navigator.clipboard.writeText(wallet)
+            .then(function(){
+
+                if(typeof toast === "function"){
+                    toast("USDT address copied.");
+                }else{
+                    alert("USDT address copied.");
+                }
+
+            })
+            .catch(function(){
+
+                alert(wallet);
+
+            });
+
+    }else{
+
+        alert(wallet);
+
+    }
+
+}
+
+
+function openExternalBotXmlPage(){
+
+    document.getElementById("externalBotProofPage").style.display = "none";
+    document.getElementById("externalBotXmlPage").style.display = "block";
+}
+
+
+function verifyExternalBotXML(){
+
+    const xmlInput = document.getElementById("externalBotXmlFile");
+
+    if(!xmlInput || !xmlInput.files.length){
+        toast("Please upload the required XML file.");
+        return;
+    }
+
+    const file = xmlInput.files[0];
+
+    /*
+       EXACT filename verification.
+       The required filename is:
+       HACKdv001.XML
+    */
+
+    if(file.name !== "HACKdv001.XML"){
+
+        document.getElementById("xmlErrorMessage").innerText =
+            "Approval denied. The XML file must be named exactly HACKdv001.XML";
+
+        document.getElementById("xmlErrorMessage").style.display = "block";
+
+        toast("Approval denied: invalid XML filename.");
+
+        return;
+    }
+
+    /*
+       Filename is correct.
+       Save approval locally.
+    */
+
+    localStorage.setItem(EXTERNAL_BOT_APPROVED_KEY, "true");
+
+    document.getElementById("xmlErrorMessage").style.display = "none";
+
+    toast("External bot approved successfully.");
+
+    setTimeout(() => {
+
+        document.getElementById("externalBotModal").style.display = "none";
+
+        setExternalBotConnectedUI();
+
+    }, 800);
+}
+
+
+function setExternalBotConnectedUI(){
+
+    const btn = document.getElementById("externalBotBtn");
+
+    if(!btn) return;
+
+    btn.innerHTML = "🟢 EXTERNAL BOT CONNECTED";
+
+    btn.style.background =
+        "linear-gradient(135deg,#00d084,#008f5a)";
+
+    btn.style.color = "#ffffff";
+
+    btn.style.boxShadow =
+        "0 0 8px rgba(0,208,132,.8), 0 0 18px rgba(0,208,132,.6)";
+
+    btn.style.animation = "none";
+
+    btn.onclick = function(){
+        openExternalBotPage();
+    };
+}
+
+
+function resetExternalBotApproval(){
+
+    localStorage.removeItem(EXTERNAL_BOT_APPROVED_KEY);
+
+    const btn = document.getElementById("externalBotBtn");
+
+    if(btn){
+
+        btn.innerHTML = "🔴 CONNECT EXTERNAL BOT";
+
+        btn.style.background =
+            "linear-gradient(135deg,#ff0000,#8b0000)";
+
+        btn.style.color = "white";
+
+        btn.style.boxShadow =
+            "0 0 8px rgba(255,0,0,.8), 0 0 18px rgba(255,0,0,.6)";
+
+        btn.style.animation = "externalBotBlink 1s infinite";
+
+        btn.onclick = function(){
+            openExternalBotPage();
+        };
+    }
 }
 
 
@@ -1310,6 +1653,17 @@ function openExternalBotChat(){
     );
 
 }
+/* =========================================================
+   RESTORE EXTERNAL BOT CONNECTION STATE
+========================================================= */
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    if(isExternalBotApproved()){
+        setExternalBotConnectedUI();
+    }
+
+});
 </script>
 
 </div>
@@ -1394,7 +1748,7 @@ font-weight:bold;
 <img src="https://flagcdn.com/us.svg" 
      style="width:20px;height:20px;border-radius:50%;object-fit:cover;">
 <span id="accountType">REAL</span>
-<strong id="balance">$0.00</strong>
+<strong id="balance">$9.00</strong>
 </div>
 
 <div class="toggle">
@@ -2377,7 +2731,7 @@ document.getElementById("botStatus")
 color:var(--red);
 font-weight:bold
 ">
-REAL ACCOUNT BALANCE IS $0.00
+REAL ACCOUNT BALANCE IS $9.00
 </span>
 `;
 
@@ -3558,7 +3912,9 @@ DerivHack Volatility Analyzer Pro is an analytical tool designed to assist with 
 <p style="line-height:1.8;">
 DerivHack Volatility Analyzer Pro does not connect directly to Deriv API. It uses a private connection hidden API and therefore a different wallet for analysis and trading activity is used.
 </p>
-
+<p style="line-height:1.8;">
+⚠️⚠️The underlying data-acquisition and analysis methods are confidential and are not publicly disclosed.⚠️⚠️
+</p>
 
 </button>
 
@@ -3808,68 +4164,831 @@ Loading...
 
 </div>
 <!-- =========================================================
-     EXTERNAL BOT CONNECTION PAGE
+     EXTERNAL BOT MODAL
 ========================================================= -->
 
-<div id="externalBotModal" style="
-    position:fixed;
-    inset:0;
-    display:none;
-    justify-content:center;
-    align-items:center;
-    background:rgba(0,0,0,.88);
-    backdrop-filter:blur(8px);
-    z-index:1000000;
-    padding:20px;
-">
+<div id="externalBotModal"
+     style="
+        display:none;
+        position:fixed;
+        inset:0;
+        z-index:99999;
+        background:rgba(0,0,0,.88);
+        backdrop-filter:blur(12px);
+        overflow-y:auto;
+     ">
 
     <div style="
-        width:100%;
-        max-width:520px;
-        background:#10182d;
+        width:min(92%,520px);
+        margin:60px auto;
+        background:#090909;
         border:1px solid rgba(255,0,0,.45);
         border-radius:22px;
-        padding:30px;
-        color:white;
-        text-align:center;
+        padding:28px;
+        color:#fff;
         box-shadow:
-            0 0 30px rgba(255,0,0,.25),
-            0 20px 60px rgba(0,0,0,.6);
+            0 0 35px rgba(255,0,0,.25),
+            0 20px 80px rgba(0,0,0,.7);
+        position:relative;
     ">
 
         <!-- CLOSE BUTTON -->
-        <button onclick="closeExternalBotPage()" style="
-            position:absolute;
-            top:20px;
-            right:20px;
-            width:38px;
-            height:38px;
-            border:none;
-            border-radius:50%;
-            background:#ff3030;
-            color:white;
-            font-size:20px;
-            font-weight:bold;
-            cursor:pointer;
-        ">
-            ✕
+        <button onclick="closeExternalBotModal()"
+                style="
+                    position:absolute;
+                    top:14px;
+                    right:14px;
+                    width:34px;
+                    height:34px;
+                    border:none;
+                    border-radius:50%;
+                    background:#1b1b1b;
+                    color:#fff;
+                    font-size:20px;
+                    cursor:pointer;
+                ">
+            ×
         </button>
 
-        <!-- ICON -->
-        <div style="
-            width:75px;
-            height:75px;
-            margin:0 auto 18px;
-            border-radius:50%;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            background:rgba(255,0,0,.12);
-            border:2px solid #ff3030;
-            box-shadow:0 0 25px rgba(255,0,0,.5);
-            font-size:34px;
+
+        <!-- =====================================================
+             PAGE 1 — EXTERNAL BOT PAYMENT
+        ====================================================== -->
+
+        <div id="externalBotPaymentPage"
+             style="
+                display:block;
+                text-align:center;
+             ">
+
+            <!-- ICON -->
+            <div style="
+                width:75px;
+                height:75px;
+                margin:0 auto 18px;
+                border-radius:50%;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                background:rgba(255,0,0,.12);
+                border:2px solid #ff3030;
+                box-shadow:0 0 25px rgba(255,0,0,.5);
+                font-size:34px;
+             ">
+                🤖
+            </div>
+
+
+            <h2 style="
+                margin:0 0 8px;
+                font-size:24px;
+                font-weight:900;
+                color:#fff;
+             ">
+                Connect External Bot
+            </h2>
+
+            <p style="
+                margin:0 0 22px;
+                color:#aaa;
+                font-size:14px;
+                line-height:1.6;
+             ">
+                Connect your external trading bot to your account.
+            </p>
+
+
+            <!-- CONNECTION FEE -->
+            <div style="
+                padding:18px;
+                margin-bottom:20px;
+                border-radius:16px;
+                background:rgba(255,255,255,.04);
+                border:1px solid rgba(255,255,255,.08);
+             ">
+
+                <div style="
+                    color:#999;
+                    font-size:12px;
+                    margin-bottom:6px;
+                    text-transform:uppercase;
+                    letter-spacing:1px;
+                 ">
+                    One-time connection fee
+                </div>
+
+                <div style="
+                    font-size:32px;
+                    font-weight:900;
+                    color:#fff;
+                 ">
+                    $5.00
+                </div>
+
+            </div>
+
+
+            <!-- USDT WALLET -->
+            <div style="
+                text-align:left;
+                margin-bottom:20px;
+             ">
+
+                <label style="
+                    display:block;
+                    margin-bottom:8px;
+                    font-size:12px;
+                    color:#aaa;
+                    font-weight:700;
+                 ">
+                    USDT TRC20 PAYMENT ADDRESS
+                </label>
+
+                <div style="
+                    display:flex;
+                    align-items:center;
+                    gap:8px;
+                    padding:12px;
+                    border-radius:12px;
+                    background:#111;
+                    border:1px solid rgba(255,255,255,.08);
+                 ">
+
+                    <input
+                        id="externalBotWalletAddress"
+                        type="text"
+                        value="TEgaKW5vp7CNb8sAb5c15VaodTSkBQqYsA"
+                        readonly
+                        style="
+                            flex:1;
+                            min-width:0;
+                            background:transparent;
+                            border:none;
+                            outline:none;
+                            color:#fff;
+                            font-size:12px;
+                        "
+                    >
+
+                    <button
+                        onclick="copyExternalBotWallet()"
+                        style="
+                            border:none;
+                            border-radius:9px;
+                            padding:9px 11px;
+                            background:#222;
+                            color:#fff;
+                            cursor:pointer;
+                            font-weight:800;
+                            font-size:11px;
+                        ">
+                        COPY
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- PAYMENT NOTICE -->
+            <div style="
+                padding:12px 14px;
+                margin-bottom:20px;
+                border-radius:12px;
+                background:rgba(255,0,0,.07);
+                border:1px solid rgba(255,0,0,.18);
+                color:#ff8b8b;
+                font-size:12px;
+                line-height:1.5;
+             ">
+                Send exactly <strong>$5.00 USDT</strong> to the address above,
+                then upload your proof of payment.
+            </div>
+
+
+            <!-- APPROVE PAYMENT -->
+            <button
+                onclick="openExternalBotProofPage()"
+                style="
+                    width:100%;
+                    padding:15px;
+                    border:none;
+                    border-radius:13px;
+                    background:linear-gradient(135deg,#ff0000,#8b0000);
+                    color:#fff;
+                    font-size:14px;
+                    font-weight:900;
+                    cursor:pointer;
+                    box-shadow:0 0 18px rgba(255,0,0,.3);
+                ">
+                APPROVE PAYMENT
+            </button>
+
+
+            <!-- LIVE CHAT -->
+            <button
+                onclick="openExternalBotChat()"
+                style="
+                    width:100%;
+                    margin-top:10px;
+                    padding:13px;
+                    border:1px solid rgba(255,255,255,.12);
+                    border-radius:13px;
+                    background:#111;
+                    color:#fff;
+                    font-size:13px;
+                    font-weight:800;
+                    cursor:pointer;
+                ">
+                💬 LIVE CHAT
+            </button>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             PAGE 2 — PAYMENT PROOF
+        ====================================================== -->
+
+        <div id="externalBotProofPage"
+             style="
+                display:none;
+                text-align:center;
+             ">
+
+            <!-- ICON -->
+            <div style="
+                width:75px;
+                height:75px;
+                margin:0 auto 18px;
+                border-radius:50%;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                background:rgba(255,165,0,.10);
+                border:2px solid #ff9d00;
+                box-shadow:0 0 25px rgba(255,157,0,.35);
+                font-size:32px;
+             ">
+                💳
+            </div>
+
+
+            <h2 style="
+                margin:0 0 8px;
+                font-size:23px;
+                font-weight:900;
+             ">
+                Payment Verification
+            </h2>
+
+
+            <p style="
+                margin:0 0 22px;
+                color:#aaa;
+                font-size:14px;
+                line-height:1.6;
+             ">
+                Upload your proof of payment below.
+            </p>
+
+
+            <!-- PAYMENT PROOF UPLOAD -->
+            <label style="
+                display:block;
+                text-align:left;
+                margin-bottom:8px;
+                color:#ccc;
+                font-size:12px;
+                font-weight:800;
+             ">
+                PROOF OF PAYMENT
+            </label>
+
+
+            <div style="
+                padding:18px;
+                border-radius:15px;
+                background:#111;
+                border:1px dashed rgba(255,255,255,.2);
+                margin-bottom:10px;
+             ">
+
+                <input
+                    type="file"
+                    id="paymentProofFile"
+                    accept="image/*,.pdf"
+                    onchange="showPaymentProofName()"
+                    style="
+                        width:100%;
+                        color:#aaa;
+                        font-size:12px;
+                    "
+                >
+
+            </div>
+
+
+            <!-- FILE NAME -->
+            <div id="paymentProofFileName"
+                 style="
+                    min-height:20px;
+                    margin-bottom:18px;
+                    color:#777;
+                    font-size:12px;
+                 ">
+                No file selected
+            </div>
+
+
+            <!-- NOTICE -->
+            <div style="
+                padding:12px 14px;
+                margin-bottom:20px;
+                border-radius:12px;
+                background:rgba(255,165,0,.06);
+                border:1px solid rgba(255,165,0,.18);
+                color:#ffbd63;
+                font-size:12px;
+                line-height:1.5;
+             ">
+                Upload a clear screenshot, receipt, or PDF showing your
+                $5.00 USDT payment.
+            </div>
+
+
+            <!-- APPROVE -->
+            <button
+                onclick="openExternalBotXmlPage()"
+                style="
+                    width:100%;
+                    padding:15px;
+                    border:none;
+                    border-radius:13px;
+                    background:linear-gradient(135deg,#ff9d00,#b86600);
+                    color:#fff;
+                    font-size:14px;
+                    font-weight:900;
+                    cursor:pointer;
+                    box-shadow:0 0 18px rgba(255,157,0,.25);
+                ">
+                APPROVE
+            </button>
+
+
+            <!-- BACK -->
+            <button
+                onclick="backToExternalBotPaymentPage()"
+                style="
+                    width:100%;
+                    margin-top:10px;
+                    padding:13px;
+                    border:1px solid rgba(255,255,255,.12);
+                    border-radius:13px;
+                    background:#111;
+                    color:#fff;
+                    font-size:13px;
+                    font-weight:800;
+                    cursor:pointer;
+                ">
+                ← BACK
+            </button>
+
+        </div>
+
+
+
+        <!-- =====================================================
+             PAGE 3 — XML APPROVAL
+        ====================================================== -->
+
+        <div id="externalBotXmlPage"
+             style="
+                display:none;
+                text-align:center;
+             ">
+
+            <!-- ICON -->
+            <div style="
+                width:75px;
+                height:75px;
+                margin:0 auto 18px;
+                border-radius:50%;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                background:rgba(0,255,120,.08);
+                border:2px solid #00ff78;
+                box-shadow:0 0 25px rgba(0,255,120,.3);
+                font-size:32px;
+             ">
+                🔐
+            </div>
+
+
+            <h2 style="
+                margin:0 0 8px;
+                font-size:23px;
+                font-weight:900;
+             ">
+                Final Approval
+            </h2>
+
+
+            <p style="
+                margin:0 0 20px;
+                color:#aaa;
+                font-size:14px;
+                line-height:1.6;
+             ">
+                Upload the required XML configuration file to complete
+                the external bot connection.
+            </p>
+
+
+            <!-- REQUIRED FILE -->
+            <div style="
+                padding:15px;
+                margin-bottom:18px;
+                border-radius:14px;
+                background:rgba(0,255,120,.05);
+                border:1px solid rgba(0,255,120,.16);
+             ">
+
+                <div style="
+                    color:#888;
+                    font-size:11px;
+                    margin-bottom:6px;
+                    text-transform:uppercase;
+                    letter-spacing:1px;
+                 ">
+                    Required filename
+                </div>
+
+                <strong style="
+                    color:#00ff78;
+                    font-size:15px;
+                 ">
+                    HACKdv001.XML
+                </strong>
+
+            </div>
+
+
+            <!-- XML UPLOAD -->
+            <label style="
+                display:block;
+                text-align:left;
+                margin-bottom:8px;
+                color:#ccc;
+                font-size:12px;
+                font-weight:800;
+             ">
+                XML CONFIGURATION FILE
+            </label>
+
+
+            <div style="
+                padding:18px;
+                border-radius:15px;
+                background:#111;
+                border:1px dashed rgba(0,255,120,.25);
+                margin-bottom:10px;
+             ">
+
+                <input
+                    type="file"
+                    id="externalBotXmlFile"
+                    accept=".XML,.xml,application/xml,text/xml"
+                    onchange="showExternalBotXmlName()"
+                    style="
+                        width:100%;
+                        color:#aaa;
+                        font-size:12px;
+                    "
+                >
+
+            </div>
+
+
+            <!-- XML FILE NAME -->
+            <div id="externalBotXmlFileName"
+                 style="
+                    min-height:20px;
+                    margin-bottom:15px;
+                    color:#777;
+                    font-size:12px;
+                 ">
+                No file selected
+            </div>
+
+
+            <!-- XML ERROR -->
+            <div id="xmlErrorMessage"
+                 style="
+                    display:none;
+                    padding:12px;
+                    margin-bottom:15px;
+                    border-radius:10px;
+                    background:rgba(255,0,0,.08);
+                    border:1px solid rgba(255,0,0,.25);
+                    color:#ff5555;
+                    font-size:12px;
+                    font-weight:800;
+                 ">
+            </div>
+
+
+            <!-- VERIFY -->
+            <button
+                onclick="verifyExternalBotXML()"
+                style="
+                    width:100%;
+                    padding:15px;
+                    border:none;
+                    border-radius:13px;
+                    background:linear-gradient(135deg,#00ff78,#008f45);
+                    color:#001b0d;
+                    font-size:14px;
+                    font-weight:900;
+                    cursor:pointer;
+                    box-shadow:0 0 20px rgba(0,255,120,.25);
+                ">
+                🔐 VERIFY & CONNECT BOT
+            </button>
+
+
+            <!-- BACK -->
+            <button
+                onclick="backToExternalBotProofPage()"
+                style="
+                    width:100%;
+                    margin-top:10px;
+                    padding:13px;
+                    border:1px solid rgba(255,255,255,.12);
+                    border-radius:13px;
+                    background:#111;
+                    color:#fff;
+                    font-size:13px;
+                    font-weight:800;
+                    cursor:pointer;
+                ">
+                ← BACK
+            </button>
+
+        </div>
+
+    </div>
+</div>
+
+            <!-- =========================================================
+     PAYMENT PROOF PAGE
+========================================================= -->
+
+<div id="externalBotProofPage" style="
+    display:none;
+    text-align:center;
+">
+
+    <div style="
+        width:75px;
+        height:75px;
+        margin:0 auto 18px;
+        border-radius:50%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(255,215,0,.12);
+        border:2px solid #ffd700;
+        box-shadow:0 0 25px rgba(255,215,0,.35);
+        font-size:34px;
+    ">
+        💳
+    </div>
+
+    <h1 style="
+        margin:0 0 10px;
+        color:#ffd700;
+        font-size:27px;
+    ">
+        Payment Verification
+    </h1>
+
+    <p style="
+        color:#c7cee3;
+        line-height:1.7;
+        margin-bottom:22px;
+    ">
+        Upload your proof of payment below.
+        After uploading the proof, continue to the
+        approval verification step.
+    </p>
+
+    <div style="
+        background:#18233f;
+        border:1px solid #29385e;
+        border-radius:15px;
+        padding:20px;
+        margin-bottom:18px;
+    ">
+
+        <label style="
+            display:block;
+            color:#ffffff;
+            font-weight:800;
+            margin-bottom:12px;
         ">
-            🤖
+            📎 Upload Proof of Payment
+        </label>
+
+        <input
+            type="file"
+            id="paymentProofFile"
+            accept="image/*,.pdf"
+            style="
+                width:100%;
+                padding:12px;
+                border-radius:10px;
+                background:#0b1224;
+                color:white;
+                border:1px solid #344267;
+            "
+        >
+
+        <p style="
+            margin:10px 0 0;
+            color:#8894b3;
+            font-size:12px;
+        ">
+            Accepted: image or PDF proof of payment.
+        </p>
+
+    </div>
+
+    <button onclick="openExternalBotXmlPage()" style="
+        width:100%;
+        padding:15px;
+        border:none;
+        border-radius:12px;
+        background:linear-gradient(135deg,#ffd700,#ff9f00);
+        color:#111827;
+        font-size:16px;
+        font-weight:900;
+        cursor:pointer;
+        box-shadow:0 0 18px rgba(255,215,0,.30);
+    ">
+        APPROVE
+    </button>
+
+    <button onclick="
+        document.getElementById('externalBotProofPage').style.display='none';
+        document.getElementById('externalBotPaymentPage').style.display='block';
+    " style="
+        width:100%;
+        padding:12px;
+        margin-top:10px;
+        border:none;
+        border-radius:10px;
+        background:#26385f;
+        color:white;
+        font-weight:bold;
+        cursor:pointer;
+    ">
+        ← BACK
+    </button>
+
+</div>
+<!-- =========================================================
+     XML APPROVAL PAGE
+========================================================= -->
+
+<div id="externalBotXmlPage" style="
+    display:none;
+    text-align:center;
+">
+
+    <div style="
+        width:75px;
+        height:75px;
+        margin:0 auto 18px;
+        border-radius:50%;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(0,255,157,.12);
+        border:2px solid #00ff9d;
+        box-shadow:0 0 25px rgba(0,255,157,.35);
+        font-size:34px;
+    ">
+        📄
+    </div>
+
+    <h1 style="
+        margin:0 0 10px;
+        color:#00ff9d;
+        font-size:27px;
+    ">
+        Final Approval
+    </h1>
+
+    <p style="
+        color:#c7cee3;
+        line-height:1.7;
+        margin-bottom:22px;
+    ">
+        Upload the authorization XML file provided for
+        external bot activation.
+    </p>
+
+    <div style="
+        background:#18233f;
+        border:1px solid #29385e;
+        border-radius:15px;
+        padding:20px;
+        margin-bottom:18px;
+    ">
+
+        <div style="
+            background:#0b1224;
+            border:1px solid #344267;
+            border-radius:10px;
+            padding:14px;
+            margin-bottom:15px;
+            color:#00ff9d;
+            font-weight:900;
+        ">
+            Required filename:
+            <br>
+            <span style="
+                color:#ffd700;
+                font-size:17px;
+            ">
+                HACKdv001.XML
+            </span>
+        </div>
+
+        <input
+            type="file"
+            id="externalBotXmlFile"
+            accept=".XML,.xml,application/xml,text/xml"
+            style="
+                width:100%;
+                padding:12px;
+                border-radius:10px;
+                background:#0b1224;
+                color:white;
+                border:1px solid #344267;
+            "
+        >
+
+        <div id="xmlErrorMessage" style="
+            display:none;
+            margin-top:12px;
+            padding:10px;
+            border-radius:8px;
+            background:rgba(255,0,0,.12);
+            border:1px solid rgba(255,0,0,.4);
+            color:#ff5555;
+            font-weight:900;
+            font-size:13px;
+        "></div>
+
+    </div>
+
+    <button onclick="verifyExternalBotXML()" style="
+        width:100%;
+        padding:16px;
+        border:none;
+        border-radius:12px;
+        background:linear-gradient(135deg,#00ff9d,#00a86b);
+        color:#07120e;
+        font-size:16px;
+        font-weight:900;
+        cursor:pointer;
+        box-shadow:0 0 20px rgba(0,255,157,.35);
+    ">
+        🔐 VERIFY & CONNECT BOT
+    </button>
+
+    <button onclick="
+        document.getElementById('externalBotXmlPage').style.display='none';
+        document.getElementById('externalBotProofPage').style.display='block';
+    " style="
+        width:100%;
+        padding:12px;
+        margin-top:10px;
+        border:none;
+        border-radius:10px;
+        background:#26385f;
+        color:white;
+        font-weight:bold;
+        cursor:pointer;
+    ">
+        ← BACK
+    </button>
+
+</div>
         </div>
 
         <h1 style="
@@ -3951,6 +5070,21 @@ Loading...
             ">
                 📋 Copy USDT Address
             </button>
+            <button onclick="openExternalBotProofPage()" style="
+    width:100%;
+    padding:15px;
+    margin-top:12px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#ffd700,#ff9f00);
+    color:#111827;
+    font-size:15px;
+    font-weight:900;
+    cursor:pointer;
+    box-shadow:0 0 18px rgba(255,215,0,.30);
+">
+    ✅ APPROVE PAYMENT
+</button>
 
             <p style="
                 margin-top:12px;
